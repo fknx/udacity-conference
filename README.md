@@ -47,7 +47,7 @@ Returns all sessions with at least one of the specified highlights. Useful in ca
 
 The problem is that this query requires two inequality conditions which is not supported by ndb. One way to solve this problem is to let ndb only filter by one of the conditions and then programmatically check the other condition to remove all non-matching entries from the result set. For example, one could fetch all non-workshop session using ndb and then only return those starting before 7 pm.
 
-The following code could be used to implement the query:
+The following code was used to implement the query for the `getAllNonWorkshopSessionsBefore7PM` endpoint:
 
 	# fetch all sessions which are not a workshop
     sessions = Session.query().filter(Session.typeOfSession != 'workshop')

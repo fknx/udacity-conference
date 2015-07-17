@@ -370,9 +370,12 @@ class ConferenceApi(remote.Service):
 
 # - - - Featured speaker - - - - - - - - - - - - - - - - - - -
 
-    def _updateFeaturedSpeaker(self, conferenceKey, speaker):
-        """Updates the featured speaker stored in the memcache in case the given speaker
-        hosts at least one additional session during the given conference."""
+    @staticmethod
+    def _updateFeaturedSpeaker(websafeConferenceKey, speaker):
+        """Update the featured speaker stored in the memcache in case 
+        the given speaker hosts at least one additional session during the given conference."""
+
+        conferenceKey = ndb.Key(urlsafe=websafeConferenceKey)
 
         sessions = Session.query(ancestor=conferenceKey).filter(Session.speaker == speaker).fetch()
 
@@ -471,7 +474,11 @@ class ConferenceApi(remote.Service):
         # store the new session
         session.put()
 
-        self._updateFeaturedSpeaker(ndb.Key(urlsafe=wsck), session.speaker)
+        # add a new task to update the featured speaker
+        taskqueue.add(params={'speaker': session.speaker,
+            'websafeConferenceKey': wsck},
+            url='/tasks/update_featured_speaker'
+        )
 
         return self._copySessionToForm(session)
 
